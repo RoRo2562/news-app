@@ -11,9 +11,10 @@ interface ArticleCardProps {
 }
 
 const ArticleCard: React.FC<ArticleCardProps> = ({ item }) => {
+  const placeholderImage = "https://media.istockphoto.com/id/1409329028/vector/no-picture-available-placeholder-thumbnail-icon-illustration-design.jpg?s=612x612&w=0&k=20&c=_zOuJu755g2eEUioiOUdz_mHKJQJn-tDgIAhQzyeKUQ="
   return (
     <TouchableOpacity style={styles.articleContainer} onPress={() => Linking.openURL(item.url)}>
-      <Image source={{ uri: item.urlToImage }} style={styles.articleImage} />
+      <Image source={{ uri: item.urlToImage || placeholderImage }} style={styles.articleImage} />
       <View style={styles.articleDetails}>
         <Text style={styles.articleTitle}>{item.title}</Text>
         <Text style={styles.articleDescription}>{item.description}</Text>

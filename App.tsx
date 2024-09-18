@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View,FlatList, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View,FlatList, Text,TextInput, ActivityIndicator, StyleSheet } from 'react-native';
 import ArticleCard from './components/article';
 
 const App = () => {
   const [articles, setArticles] = useState([]);
+  const [filteredArticles, setFilteredArticles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const API_KEY = 'c107533752d4233bbc6e6c33080b2d0';  // Replace with your actual NewsAPI key
   const API_URL = `https://newsapi.org/v2/everything?q=latest&apiKey=8c107533752d4233bbc6e6c33080b2d0`;
@@ -23,14 +25,33 @@ const App = () => {
       });
   }, []);
 
+  // Filter articles based on search query
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (query === '') {
+      setFilteredArticles(articles);
+    } else {
+      const filtered = articles.filter(article =>
+        article.title.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredArticles(filtered);
+    }
+  };
+
   // Simple UI to show articles or loading spinner
   return (
     <View style = {styles.container}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search articles..."
+        value={searchQuery}
+        onChangeText={handleSearch}
+      />
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <FlatList
-          data={articles}
+          data={filteredArticles}
           renderItem={({ item }) => <ArticleCard item={item} />}  // Use your ArticleCard component
           keyExtractor={(item, index) => item.url + index}  // Ensure unique keys (use the article URL as a key)
         />
@@ -44,6 +65,15 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     backgroundColor: '#f8f8f8',
+  },
+  searchInput: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingLeft: 10,
+    marginBottom: 10,
+    marginTop: 20,
   },
 });
 
