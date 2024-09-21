@@ -3,14 +3,14 @@ import { View,FlatList, Text,TextInput, ActivityIndicator, StyleSheet } from 're
 import ArticleCard from '../../components/article';
 import Navigator from "../../routes/homestack";
 
-const App = () => {
+const Home = () => {
   const [articles, setArticles] = useState([]);
   const [filteredArticles, setFilteredArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const API_KEY = 'c107533752d4233bbc6e6c33080b2d0';  // Replace with your actual NewsAPI key
-  const API_URL = `https://newsapi.org/v2/everything?q=latest&apiKey=8c107533752d4233bbc6e6c33080b2d0`;
+  const API_KEY = '8c107533752d4233bbc6e6c33080b2d0';  // Replace with your actual NewsAPI key
+  const API_URL = `https://newsapi.org/v2/everything?q=latest&apiKey=${API_KEY}`;
 
   useEffect(() => {
     // Fetch data from the API when the component mounts
@@ -19,6 +19,7 @@ const App = () => {
       .then((data) => {
         console.log(data);  // Log the full JSON response to the console
         setArticles(data.articles);  // Extract the articles and set state
+        setFilteredArticles(data.articles)
         setLoading(false);  // Stop loading
       })
       .catch((error) => {
@@ -78,4 +79,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default Home;

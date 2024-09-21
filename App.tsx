@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import 'react-native-gesture-handler';
 import { View,FlatList, Text,TextInput, ActivityIndicator, StyleSheet } from 'react-native';
 import ArticleCard from './components/article';
 import Navigator from "./routes/homestack";
