@@ -1,31 +1,49 @@
 import React, { useEffect, useState } from 'react';
 import { View,FlatList, Text,TextInput, ActivityIndicator, StyleSheet } from 'react-native';
 import ArticleCard from '../../components/article';
-import Navigator from "../../routes/homestack";
+import { fetchArticles } from '../../apis/newsApi';
+
 
 const Home = () => {
   const [articles, setArticles] = useState([]);
   const [filteredArticles, setFilteredArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);  // State to track if more articles are available
 
-  const API_KEY = '8c107533752d4233bbc6e6c33080b2d0';  // Replace with your actual NewsAPI key
-  const API_URL = `https://newsapi.org/v2/everything?q=latest&apiKey=${API_KEY}`;
+  const pageSize = 20;  // Number of articles per page
 
   useEffect(() => {
-    // Fetch data from the API when the component mounts
-    fetch(API_URL)
-      .then((response) => response.json())  // Parse the response as JSON
-      .then((data) => {
-        console.log(data);  // Log the full JSON response to the console
-        setArticles(data.articles);  // Extract the articles and set state
-        setFilteredArticles(data.articles)
-        setLoading(false);  // Stop loading
-      })
-      .catch((error) => {
-        console.error('Error fetching data:', error);  // Log any errors
-      });
+    loadArticles(currentPage);  // Load initial articles when the component mounts
   }, []);
+
+  const loadArticles = async (page: number) => {
+    setLoading(true);  // Show loading spinner during data fetching
+    try {
+      const fetchedArticles = await fetchArticles(page, pageSize);
+      if (fetchedArticles.length < pageSize) {
+        setHasMore(false);  // No more articles to load
+      }
+      setArticles(prevArticles => [...prevArticles, ...fetchedArticles]);  // Append new articles
+      setFilteredArticles(prevArticles => [...prevArticles, ...fetchedArticles]);  // Update filtered list
+      setLoading(false);  // Stop loading spinner
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+      setLoading(false);  // Stop loading spinner on error
+    }
+  };
+
+  const loadMoreArticles = () => {
+    if (!loadingMore && hasMore) {
+      setLoadingMore(true);  // Show loading more spinner
+      const nextPage = currentPage + 1;
+      loadArticles(nextPage);
+      setCurrentPage(nextPage);
+      setLoadingMore(false);
+    }
+  };
 
   // Filter articles based on search query
   const handleSearch = (query: string) => {
@@ -40,22 +58,26 @@ const Home = () => {
     }
   };
 
-  // Simple UI to show articles or loading spinner
   return (
-    <View style = {styles.container}>
+    <View style={styles.container}>
       <TextInput
         style={styles.searchInput}
         placeholder="Search articles..."
         value={searchQuery}
         onChangeText={handleSearch}
       />
-      {loading ? (
+      {loading && currentPage === 1 ? (  // Show loading spinner only during the first load
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <FlatList
           data={filteredArticles}
-          renderItem={({ item }) => <ArticleCard item={item} />}  // Use your ArticleCard component
-          keyExtractor={(item, index) => item.url + index}  // Ensure unique keys (use the article URL as a key)
+          renderItem={({ item }) => <ArticleCard item={item} />}
+          keyExtractor={(item, index) => item.url + index}
+          onEndReached={loadMoreArticles}  // Load more when end of list is reached
+          onEndReachedThreshold={0.5}  // Trigger when 50% of the list is scrolled
+          ListFooterComponent={
+            loadingMore ? <ActivityIndicator size="small" color="#0000ff" /> : null
+          }  // Show footer loading indicator when loading more articles
         />
       )}
     </View>
